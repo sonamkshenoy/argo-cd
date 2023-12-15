@@ -1,0 +1,82 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: throughargo
+  namespace: argocd
+spec:
+  destination:
+    namespace: argocd
+    server: https://kubernetes.default.svc
+  project: default
+  source:
+    path: netbook
+    repoURL: https://github.com/sonamkshenoy/argocd-example-apps
+    targetRevision: test-deployment
+---
+#apiVersion: batch/v1
+#kind: Job
+#metadata:
+#  name: upgrade-sql-schema
+#  annotations:
+#    argocd.argoproj.io/hook: PreSync
+#    argocd.argoproj.io/hook-delete-policy: HookSucceeded
+#spec:
+#  template:
+#    spec:
+#      containers:
+#        - name: upgrade-sql-schema
+#          image: alpine:latest
+#          command: ["sleep", "5"]
+#      restartPolicy: Never
+##  selector:
+##    matchLabels:
+##      app: newbook
+#---
+#apiVersion: batch/v1
+#kind: Job
+#metadata:
+#  name: maint-page-up
+#  annotations:
+#    argocd.argoproj.io/hook: PreSync
+#    argocd.argoproj.io/hook-delete-policy: HookSucceeded
+#spec:
+#  template:
+#    spec:
+#      containers:
+#        - name: page-up
+#          image: alpine:latest
+#          command: ["sleep", "2"]
+#      restartPolicy: Never
+#  backoffLimit: 0
+---
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: frontpage
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      page: front
+  template:
+    metadata:
+      labels:
+        page: front
+    spec:
+      containers:
+        - name: main
+          image: nginx:latest
+---
+#apiVersion: v1
+#kind: Service
+#metadata:
+#  name: frontend
+#  annotations:
+#    helm.sh/hook-weight: "2"
+#spec:
+#  selector:
+#    tier: frontend
+#  ports:
+#    - protocol: TCP
+#      port: 80
+#      targetPort: 80
